@@ -16,6 +16,7 @@ private:
 	double speedUp = 0;
 	double speedHorizont = 0;
 	const int divide = 1000;
+	Rectangle platform;
 public:
 	Player(GameLevel* lvl_, int gameWidth_, int gameHeight_, int blockSizeInPixels_, std::shared_ptr<Platforms> plat_)
 		: lvl(lvl_)
@@ -29,6 +30,8 @@ public:
 	}
 
 	bool CheckPlatforms(double time);
+	void CheckStayingOnGround();
+	void HitAbove(double time);
 	void Move(double time);
 	void MoveHorizontalInAir(double time);
 	void MoveRight();

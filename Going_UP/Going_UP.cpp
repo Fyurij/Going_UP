@@ -112,7 +112,7 @@ public:
 		for (int i = 0; i < plats.size(); ++i)
 		{
 			int j = 0;
-			while (plats[i].start.x + j <= plats[i].finish.x)
+			while (plats[i].start.x + j < plats[i].finish.x)
 			{
 				if (plats[i].start.y <= lvl->curY && plats[i].start.y > lvl->curY - GAME_HEIGHT)
 				{
@@ -214,7 +214,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	Log(as);
 	std::chrono::time_point<std::chrono::steady_clock> current = std::chrono::steady_clock::now();
 	TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
-	while (TIME < 10)
+	while (TIME < 5)
 	{
 		std::chrono::time_point<std::chrono::steady_clock> current = std::chrono::steady_clock::now();
 		TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
