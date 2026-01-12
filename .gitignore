@@ -1,5 +1,2 @@
 .vs
-out/
-out/build/x64-debug
 out
-*build*
