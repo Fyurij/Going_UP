@@ -1,3 +1,0 @@
-C:/Users/fyuri/Desktop/Coding/Going_UP/out/build/x64-debug/_deps/sdl-subbuild/CMakeFiles/sdl-populate.dir
-C:/Users/fyuri/Desktop/Coding/Going_UP/out/build/x64-debug/_deps/sdl-subbuild/CMakeFiles/edit_cache.dir
-C:/Users/fyuri/Desktop/Coding/Going_UP/out/build/x64-debug/_deps/sdl-subbuild/CMakeFiles/rebuild_cache.dir
