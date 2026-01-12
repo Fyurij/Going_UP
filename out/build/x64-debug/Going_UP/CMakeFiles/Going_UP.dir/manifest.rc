@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "C:/Users/fyuri/Desktop/Coding/Going_UP/out/build/x64-debug/Going_UP/CMakeFiles/Going_UP.dir/embed.manifest"

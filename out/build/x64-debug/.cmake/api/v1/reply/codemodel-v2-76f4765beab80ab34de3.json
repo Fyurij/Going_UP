@@ -1,0 +1,145 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "_deps/sdl-build",
+					"jsonFile" : "directory-_deps.sdl-build-Debug-a7221f8a13e6bf102073.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "out/build/x64-debug/_deps/sdl-src",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3
+					]
+				},
+				{
+					"build" : "Going_UP",
+					"jsonFile" : "directory-Going_UP-Debug-281f46ae118b78ce7e2e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Going_UP",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						2
+					],
+					"name" : "Going_UP",
+					"targetIndexes" : 
+					[
+						0,
+						4
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "SDL3",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "Going_UP::@5a39d04c68ed7301c620",
+					"jsonFile" : "target-Going_UP-Debug-b4a294e5817f2737d4d7.json",
+					"name" : "Going_UP",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "SDL3-shared::@fc7b397d5a055aba6d5e",
+					"jsonFile" : "target-SDL3-shared-Debug-09cca93ac81909e4f0ee.json",
+					"name" : "SDL3-shared",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "SDL3_test::@fc7b397d5a055aba6d5e",
+					"jsonFile" : "target-SDL3_test-Debug-def3fc49376eaa68b9f3.json",
+					"name" : "SDL3_test",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "SDL_uclibc::@fc7b397d5a055aba6d5e",
+					"jsonFile" : "target-SDL_uclibc-Debug-987f1183a0560d3f854c.json",
+					"name" : "SDL_uclibc",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "copy_config::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-copy_config-Debug-ab83a5ab5b639dc0c314.json",
+					"name" : "copy_config",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/fyuri/Desktop/Coding/Going_UP/out/build/x64-debug",
+		"source" : "C:/Users/fyuri/Desktop/Coding/Going_UP"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 8
+	}
+}
