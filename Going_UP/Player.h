@@ -12,18 +12,20 @@ private:
 	bool onGround = true;
 	int gameWidth;
 	int gameHeight;
+	int maxY;
 	int blockSizeInPixels;
 	double speedUp = 0;
 	double speedHorizont = 0;
 	const int divide = 1000;
 	Rectangle platform;
 public:
-	Player(GameLevel* lvl_, int gameWidth_, int gameHeight_, int blockSizeInPixels_, std::shared_ptr<Platforms> plat_)
+	Player(GameLevel* lvl_, int gameWidth_, int gameHeight_, int maxY_, int blockSizeInPixels_, std::shared_ptr<Platforms> plat_)
 		: lvl(lvl_)
 		, gameWidth(gameWidth_)
 		, gameHeight(gameHeight_)
 		, blockSizeInPixels(blockSizeInPixels_)
 		, plat(plat_)
+		, maxY(maxY_)
 	{
 		player.x = gameWidth / 2;
 		player.y = gameHeight - 2;
@@ -40,6 +42,8 @@ public:
 	void SpeedLeft();
 	void SpeedRight();
 	Koordinates& GetPlayerPos();
+	void SetPlayerPos(Koordinates& koord);
 	void SetOnGround(bool ground);
 	bool IsOnGround();
+	bool CheckBottom();
 };

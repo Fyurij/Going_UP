@@ -8,7 +8,7 @@ bool Player::CheckPlatforms(double time)
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if (player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x && static_cast<int>(player.y - (speedUp * time / divide) * blockSizeInPixels) < gameHeight - platforms[i].start.y && static_cast<int>(player.y) > gameHeight - platforms[i].start.y)
+		if ( ( player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x ) && static_cast<int>(player.y + 1) == gameHeight - platforms[i].start.y && speedUp < 0)
 		{
 			saveHeight = platforms[i].start.y;
 			platform = platforms[i];
@@ -24,7 +24,7 @@ void Player::CheckStayingOnGround()
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if ((player.x < platform.start.x || player.x > platform.finish.x) && player.y + 2 != gameHeight)
+		if ((player.x < platform.start.x || player.x > platform.finish.x) && (!CheckBottom() || player.y + 2 != gameHeight))	//
 		{
 			onGround = false;
 			return;
@@ -38,7 +38,7 @@ void Player::HitAbove(double time)
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if (player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x && static_cast<int>(player.y - 1) == gameHeight - platforms[i].start.y && speedUp > 0)
+		if ((player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x) && ( static_cast<int>(player.y) > gameHeight - platforms[i].start.y && static_cast<int>(player.y - 1) <= gameHeight - platforms[i].start.y ) )
 		{
 			speedUp = -3;
 			return;
@@ -48,7 +48,7 @@ void Player::HitAbove(double time)
 
 void Player::Move(double time)
 {
-	if (((player.y - (speedUp * time / divide)) * blockSizeInPixels < gameHeight * blockSizeInPixels) && !onGround && CheckPlatforms(time))
+	if ((!CheckBottom() || (player.y - (speedUp * time / divide)) * blockSizeInPixels < gameHeight * blockSizeInPixels) && !onGround && CheckPlatforms(time))		//
 	{
 		HitAbove(time);
 		player.y -= speedUp * (time / divide);
@@ -56,7 +56,7 @@ void Player::Move(double time)
 	}
 	else
 	{
-		player.y = gameHeight - (saveHeight + 1);
+		player.y = gameHeight - (saveHeight + 1);					
 		speedUp = 0;
 		speedHorizont = 0;
 		CheckStayingOnGround();
@@ -93,7 +93,7 @@ void Player::MoveLeft()
 
 void Player::SpeedUp()
 {
-	speedUp = 100;
+	speedUp = 150;
 }
 
 void Player::SpeedLeft()
@@ -111,6 +111,12 @@ Koordinates& Player::GetPlayerPos()
 	return player;
 }
 
+void Player::SetPlayerPos(Koordinates& koord)
+{
+	player.y = koord.y + (gameHeight / 3);
+	player.x = koord.x;
+}
+
 void Player::SetOnGround(bool ground)
 {
 	onGround = ground;
@@ -119,4 +125,9 @@ void Player::SetOnGround(bool ground)
 bool Player::IsOnGround()
 {
 	return onGround;
+}
+
+bool Player::CheckBottom()
+{
+	return (lvl->curY == gameHeight);
 }

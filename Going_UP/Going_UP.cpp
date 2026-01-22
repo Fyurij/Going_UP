@@ -230,7 +230,17 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	{
 		player->MoveHorizontalInAir(TIME);
 	}
-
+	Koordinates location = player->GetPlayerPos();
+	if (static_cast<int>(location.y) == static_cast<int>(5 * GAME_HEIGHT / 6) && !player->CheckBottom())
+	{
+		lvl->curY -= static_cast<int>(GAME_HEIGHT / 3);
+		player->SetPlayerPos(location);
+	}
+	else if (static_cast<int>(location.y) == static_cast<int>(GAME_HEIGHT / 6))
+	{
+		lvl->curY += static_cast<int>(GAME_HEIGHT / 3);
+		player->SetPlayerPos(location);
+	}
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(as->renderer);
 	scr->GenerateScreen();
@@ -291,14 +301,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
-	/*for (i = 0; i < SDL_arraysize(extended_metadata); i++)
-	{
-		if (!SDL_SetAppMetadataProperty(extended_metadata[i].key, extended_metadata[i].value)) 
-		{
-			return SDL_APP_FAILURE;
-		}
-	}*/
-
 	if (!SDL_Init(SDL_INIT_VIDEO)) 
 	{
 		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
@@ -318,14 +320,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
-	as->level.maxX = GAME_WIDTH;
-	as->level.maxY = GAME_HEIGHT * 5;
+	//as->level.maxX = GAME_WIDTH;
+	//as->level.maxY = GAME_HEIGHT * 5;
 
 	ScreenInit(&as->level);
 
 	shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT);
 
-	as->player = std::make_shared<Player>(&as->level, GAME_WIDTH, GAME_HEIGHT, BLOCK_SIZE_IN_PIXELS, plat);
+	as->player = std::make_shared<Player>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->level.maxY, BLOCK_SIZE_IN_PIXELS, plat);
 
 	as->screen = Screen(&as->level, as->player, plat);
 
@@ -342,9 +344,3 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 		SDL_free(as);
 	}
 }
-
-// TODO
-//	1) Обработчик кнопок вверх и вниз
-//	2) Генерация платформ / Хардкод поля
-//	3) Граница поля
-//	4) Отрисовка
