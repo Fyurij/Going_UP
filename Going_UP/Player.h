@@ -10,6 +10,7 @@ private:
 	std::shared_ptr<Platforms> plat;
 	GameLevel* lvl;
 	bool onGround = true;
+	bool movingHorizontal = false;
 	int gameWidth;
 	int gameHeight;
 	int maxY;
@@ -47,4 +48,5 @@ public:
 	void SetOnGround(bool ground);
 	bool IsOnGround();
 	bool CheckBottom();
+	bool IsMovingHorizontal();
 };

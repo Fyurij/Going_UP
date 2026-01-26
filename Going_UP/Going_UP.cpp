@@ -102,7 +102,7 @@ public:
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == static_cast<int>(lvl->curY - playerPos.y) && j == static_cast<int>(playerPos.x) % GAME_WIDTH && static_cast<int>(lvl->curY - playerPos.y) > 0)
+				if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(playerPos.x) % GAME_WIDTH && static_cast<int>(lvl->curY - playerPos.y) > 0)
 				{
 					screen[GAME_HEIGHT - i][j] = Pixel::Player;
 				}
@@ -114,7 +114,7 @@ public:
 			int j = 0;
 			while (plats[i].start.x + j < plats[i].finish.x)
 			{
-				if (plats[i].start.y <= lvl->curY && plats[i].start.y > lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY)
+				if (plats[i].start.y <= lvl->curY && plats[i].start.y >= lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY)
 				{
 					screen[GAME_HEIGHT - (lvl->curY - plats[i].start.y)][plats[i].start.x + j] = Pixel::Platform;
 				}
@@ -166,7 +166,7 @@ SDL_AppResult KeyEvent(GameLevel* lvl, SDL_Scancode keyCode, std::shared_ptr<Pla
 	case SDL_SCANCODE_DOWN:
 		break;
 	case SDL_SCANCODE_LEFT:
-		if (!player->IsOnGround())
+		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedLeft();
 		}
@@ -176,7 +176,7 @@ SDL_AppResult KeyEvent(GameLevel* lvl, SDL_Scancode keyCode, std::shared_ptr<Pla
 		}
 		break;
 	case SDL_SCANCODE_RIGHT:
-		if (!player->IsOnGround())
+		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedRight();
 		}
