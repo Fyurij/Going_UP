@@ -6,7 +6,7 @@ bool Platforms::CheckPlatformPlace(Rectangle& rect)
 	{
 		return false;
 	}
-	if (rect.start.y < 1 && rect.start.y > gameHeight - 1 && rect.finish.y < 1 && rect.finish.y > gameHeight - 1 && rect.start.y != rect.finish.y)
+	if ( ( rect.start.y < lvl->curY - gameHeight && rect.start.y > lvl->curY - 1 ) && ( rect.finish.y < lvl->curY - gameHeight && rect.finish.y > lvl->curY - 1 ) && rect.start.y != rect.finish.y)
 	{
 		return false;
 	}

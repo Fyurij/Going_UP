@@ -5,7 +5,7 @@
 class Player
 {
 private:
-	int saveHeight = 1;
+	int saveHeight;
 	Koordinates player;
 	std::shared_ptr<Platforms> plat;
 	GameLevel* lvl;
@@ -26,12 +26,13 @@ public:
 		, blockSizeInPixels(blockSizeInPixels_)
 		, plat(plat_)
 		, maxY(maxY_)
+		, saveHeight(maxY_ - 1)
 	{
-		player.x = gameWidth / 2;
-		player.y = gameHeight - 2;
+		player.x = lvl->maxX / 2;
+		player.y = lvl->maxY - 2;
 	}
 
-	bool CheckPlatforms(double time);
+	bool IsGroundOnPlatform(double time);
 	void CheckStayingOnGround();
 	void HitAbove(double time);
 	void Move(double time);

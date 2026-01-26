@@ -36,6 +36,8 @@ public:
 			file >> rect.start.y;
 			file >> rect.finish.x;
 			file >> rect.finish.y;
+			rect.start.y = lvl->maxY - rect.start.y;
+			rect.finish.y = lvl->maxY - rect.finish.y;
 			if (CheckPlatformPlace(rect))
 			{
 				platforms.push_back(rect);

@@ -86,11 +86,11 @@ public:
 		{
 			for (int j = 0; j < screen[i].size(); ++j)
 			{
-				if (i == 0 && lvl->curY == lvl->maxY)
+				if (i == 0 && lvl->curY == GAME_HEIGHT)
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == (GAME_HEIGHT - 1) && lvl->curY == GAME_HEIGHT)
+				if (i == (GAME_HEIGHT - 1) && lvl->curY == lvl->maxY)
 				{
 					screen[i][j] = Pixel::Border;
 				}
@@ -98,13 +98,13 @@ public:
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (j == (GAME_WIDTH - 1))
+				if (j == (lvl->maxX - 1))
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == static_cast<int>(playerPos.y) && j == static_cast<int>(playerPos.x))
+				if (i == static_cast<int>(lvl->curY - playerPos.y) && j == static_cast<int>(playerPos.x) % GAME_WIDTH && static_cast<int>(lvl->curY - playerPos.y) > 0)
 				{
-					screen[i][j] = Pixel::Player;
+					screen[GAME_HEIGHT - i][j] = Pixel::Player;
 				}
 			}
 		}
@@ -114,9 +114,9 @@ public:
 			int j = 0;
 			while (plats[i].start.x + j < plats[i].finish.x)
 			{
-				if (plats[i].start.y <= lvl->curY && plats[i].start.y > lvl->curY - GAME_HEIGHT)
+				if (plats[i].start.y <= lvl->curY && plats[i].start.y > lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY)
 				{
-					screen[lvl->curY - plats[i].start.y][plats[i].start.x + j] = Pixel::Platform;
+					screen[GAME_HEIGHT - (lvl->curY - plats[i].start.y)][plats[i].start.x + j] = Pixel::Platform;
 				}
 				++j;
 			}
@@ -141,7 +141,7 @@ struct AppState
 
 void ScreenInit(GameLevel* lvl)
 {
-	lvl->curY = GAME_HEIGHT;
+	lvl->curY = GAME_HEIGHT * 5;
 	//lvl->curX = GAME_WIDTH / 2;
 	lvl->maxX = GAME_WIDTH;
 	lvl->maxY = GAME_HEIGHT * 5;
@@ -198,6 +198,7 @@ void Log(AppState* as)
 	std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog) << std::endl;
 	Koordinates play = as->player->GetPlayerPos();
 	std::cout << "Player x: " << play.x << " y: " << play.y << std::endl;
+	std::cout << "Current Y: " << as->level.curY << std::endl;
 	as->prevLog = current;
 }
 
@@ -231,14 +232,14 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 		player->MoveHorizontalInAir(TIME);
 	}
 	Koordinates location = player->GetPlayerPos();
-	if (static_cast<int>(location.y) == static_cast<int>(5 * GAME_HEIGHT / 6) && !player->CheckBottom())
+	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
 	{
-		lvl->curY -= static_cast<int>(GAME_HEIGHT / 3);
+		lvl->curY += static_cast<int>(GAME_HEIGHT / 12);
 		player->SetPlayerPos(location);
 	}
-	else if (static_cast<int>(location.y) == static_cast<int>(GAME_HEIGHT / 6))
+	else if (lvl->curY - static_cast<int>(location.y) >= static_cast<int>(5 * GAME_HEIGHT / 6) && lvl->curY > GAME_HEIGHT)
 	{
-		lvl->curY += static_cast<int>(GAME_HEIGHT / 3);
+		lvl->curY -= static_cast<int>(GAME_HEIGHT / 12);
 		player->SetPlayerPos(location);
 	}
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
