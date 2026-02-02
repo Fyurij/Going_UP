@@ -78,7 +78,7 @@ void Player::MoveHorizontalInAir(double time)
 	{
 		player.x -= speedHorizont * (time / divide);
 	}
-	if (speedHorizont < 0 && player.x + abs(speedHorizont) * (time / divide) < lvl->maxX - 1)
+	if (speedHorizont < 0 && player.x + abs(speedHorizont) * (time / divide) < lvl->maxX - 2)
 	{
 		player.x += abs(speedHorizont) * (time / divide);
 	}
@@ -86,7 +86,7 @@ void Player::MoveHorizontalInAir(double time)
 
 void Player::MoveRight()
 {
-	if (player.x + 1 < lvl->maxX - 1)
+	if (player.x + 1 < lvl->maxX - 2)
 	{
 		++player.x;
 	}

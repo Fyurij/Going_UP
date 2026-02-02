@@ -29,7 +29,7 @@ public:
 		, maxY(maxY_)
 		, saveHeight(maxY_ - 1)
 	{
-		player.x = lvl->maxX / 2;
+		player.x = gameWidth_ / 2;
 		player.y = lvl->maxY - 2;
 	}
 

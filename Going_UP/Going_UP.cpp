@@ -94,17 +94,17 @@ public:
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (j == 0)
+				if (j == 0 && lvl->curX == GAME_WIDTH)
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (j == (lvl->maxX - 1))
+				if (j == (GAME_WIDTH - 1) && lvl->curX == lvl->maxX)
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(playerPos.x) % GAME_WIDTH && static_cast<int>(lvl->curY - playerPos.y) > 0)
+				if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(std::round(lvl->curX - playerPos.x)) && static_cast<int>(lvl->curY - playerPos.y) > 0 && static_cast<int>(lvl->curX - playerPos.x) > 0)
 				{
-					screen[GAME_HEIGHT - i][j] = Pixel::Player;
+					screen[GAME_HEIGHT - i][GAME_WIDTH - j] = Pixel::Player;
 				}
 			}
 		}
@@ -114,9 +114,9 @@ public:
 			int j = 0;
 			while (plats[i].start.x + j < plats[i].finish.x)
 			{
-				if (plats[i].start.y <= lvl->curY && plats[i].start.y >= lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY)
+				if (plats[i].start.y <= lvl->curY && plats[i].start.y >= lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY && plats[i].start.x + j <= lvl->curX && plats[i].start.x + j >= lvl->curX - GAME_WIDTH)
 				{
-					screen[GAME_HEIGHT - (lvl->curY - plats[i].start.y)][plats[i].start.x + j] = Pixel::Platform;
+					screen[GAME_HEIGHT - (lvl->curY - plats[i].start.y)][GAME_WIDTH - (lvl->curX - plats[i].start.x) + j] = Pixel::Platform;
 				}
 				++j;
 			}
@@ -142,8 +142,8 @@ struct AppState
 void ScreenInit(GameLevel* lvl)
 {
 	lvl->curY = GAME_HEIGHT * 5;
-	//lvl->curX = GAME_WIDTH;
-	lvl->maxX = GAME_WIDTH;// *5;
+	lvl->curX = GAME_WIDTH;
+	lvl->maxX = GAME_WIDTH * 2;
 	lvl->maxY = GAME_HEIGHT * 5;
 }
 
@@ -204,6 +204,7 @@ void Log(AppState* as)
 	Koordinates play = as->player->GetPlayerPos();
 	std::cout << "Player x: " << play.x << " y: " << play.y << std::endl;
 	std::cout << "Current Y: " << as->level.curY << std::endl;
+	std::cout << "Current X: " << as->level.curX << std::endl;
 	as->prevLog = current;
 }
 
@@ -217,12 +218,30 @@ void MovingScreen(shared_ptr<Player> player, GameLevel* lvl)
 		{
 			lvl->curY = lvl->maxY;
 		}
-		player->SetPlayerPos(location);
 	}
 	else if (lvl->curY - static_cast<int>(location.y) >= static_cast<int>(5 * GAME_HEIGHT / 6) && lvl->curY > GAME_HEIGHT)
 	{
 		lvl->curY -= static_cast<int>(GAME_HEIGHT / 12);
-		player->SetPlayerPos(location);
+		if (lvl->curY < GAME_HEIGHT)
+		{
+			lvl->curY = GAME_HEIGHT;
+		}
+	}
+	if (lvl->curX - static_cast<int>(location.x) <= static_cast<int>(GAME_WIDTH / 6) && lvl->curX < lvl->maxX)
+	{
+		lvl->curX += 1;//static_cast<int>(GAME_WIDTH / 12);
+		if (lvl->curX > lvl->maxX)
+		{
+			lvl->curX = lvl->maxX;
+		}
+	}
+	else if (lvl->curX - static_cast<int>(location.x) >= static_cast<int>(5 * GAME_WIDTH / 6) && lvl->curX > GAME_WIDTH)
+	{
+		lvl->curX -= 1;//static_cast<int>(GAME_WIDTH / 12);
+		if (lvl->curX < GAME_WIDTH)
+		{
+			lvl->curX = GAME_WIDTH;
+		}
 	}
 }
 
