@@ -142,7 +142,6 @@ struct AppState
 void ScreenInit(GameLevel* lvl)
 {
 	lvl->curY = GAME_HEIGHT * 5;
-	//lvl->curX = GAME_WIDTH / 2;
 	lvl->maxX = GAME_WIDTH;
 	lvl->maxY = GAME_HEIGHT * 5;
 }
@@ -164,6 +163,10 @@ SDL_AppResult KeyEvent(GameLevel* lvl, SDL_Scancode keyCode, std::shared_ptr<Pla
 		}
 		break;
 	case SDL_SCANCODE_DOWN:
+		/*if (lvl->curY != lvl->maxY&&)
+		{
+			lvl->curY += 1;
+		}*/
 		break;
 	case SDL_SCANCODE_LEFT:
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
@@ -221,9 +224,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 		TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
 	}
 	as->prevLog = current;
-	// run game logic if we're at or past the time to run it.
-	// if we're _really_ behind the time to run it, run it
-	// several times.
+
 	int color = 0;
 
 	player->Move(TIME);
@@ -271,8 +272,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 			SDL_RenderFillRect(as->renderer, &r);
 		}
 	}
-	//SDL_SetRenderDrawColor(as->renderer, 255, 255, 0, SDL_ALPHA_OPAQUE); /*head*/
-	//SDL_RenderFillRect(as->renderer, &r);
 	SDL_RenderPresent(as->renderer);
 	return SDL_APP_CONTINUE;
 }
@@ -320,9 +319,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	{
 		return SDL_APP_FAILURE;
 	}
-
-	//as->level.maxX = GAME_WIDTH;
-	//as->level.maxY = GAME_HEIGHT * 5;
 
 	ScreenInit(&as->level);
 

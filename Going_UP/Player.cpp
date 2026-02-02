@@ -66,6 +66,14 @@ void Player::Move(double time)
 
 void Player::MoveHorizontalInAir(double time)
 {
+	std::vector<Rectangle> platforms = plat->GetPlatforms();
+	for (int i = 0; i < platforms.size(); ++i)
+	{
+		if (player.x - speedHorizont * (time / divide) < platforms[i].finish.x && player.x + speedHorizont * (time / divide) > platforms[i].start.x && ( static_cast<int>(std::round(player.y)) == static_cast<int>(std::round(platforms[i].finish.y)) || static_cast<int>(std::round(player.y)) - 1 == static_cast<int>(std::round(platforms[i].finish.y))))
+		{
+			return;
+		}
+	}
 	if (speedHorizont > 0 && player.x - speedHorizont * (time / divide) > 1)
 	{
 		player.x -= speedHorizont * (time / divide);
