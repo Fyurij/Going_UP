@@ -142,7 +142,8 @@ struct AppState
 void ScreenInit(GameLevel* lvl)
 {
 	lvl->curY = GAME_HEIGHT * 5;
-	lvl->maxX = GAME_WIDTH;
+	//lvl->curX = GAME_WIDTH;
+	lvl->maxX = GAME_WIDTH;// *5;
 	lvl->maxY = GAME_HEIGHT * 5;
 }
 
@@ -163,10 +164,11 @@ SDL_AppResult KeyEvent(GameLevel* lvl, SDL_Scancode keyCode, std::shared_ptr<Pla
 		}
 		break;
 	case SDL_SCANCODE_DOWN:
-		/*if (lvl->curY != lvl->maxY&&)
+		Koordinates pos = player->GetPlayerPos();
+		if (lvl->curY != lvl->maxY && lvl->curY - pos.y < 2 * GAME_HEIGHT / 3)
 		{
 			lvl->curY += 1;
-		}*/
+		}
 		break;
 	case SDL_SCANCODE_LEFT:
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
@@ -205,6 +207,25 @@ void Log(AppState* as)
 	as->prevLog = current;
 }
 
+void MovingScreen(shared_ptr<Player> player, GameLevel* lvl)
+{
+	Koordinates location = player->GetPlayerPos();
+	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
+	{
+		lvl->curY += static_cast<int>(GAME_HEIGHT / 12);
+		if (lvl->curY > lvl->maxY)
+		{
+			lvl->curY = lvl->maxY;
+		}
+		player->SetPlayerPos(location);
+	}
+	else if (lvl->curY - static_cast<int>(location.y) >= static_cast<int>(5 * GAME_HEIGHT / 6) && lvl->curY > GAME_HEIGHT)
+	{
+		lvl->curY -= static_cast<int>(GAME_HEIGHT / 12);
+		player->SetPlayerPos(location);
+	}
+}
+
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
 	AppState* as = (AppState*)appstate;
@@ -232,17 +253,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	{
 		player->MoveHorizontalInAir(TIME);
 	}
-	Koordinates location = player->GetPlayerPos();
-	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
-	{
-		lvl->curY += static_cast<int>(GAME_HEIGHT / 12);
-		player->SetPlayerPos(location);
-	}
-	else if (lvl->curY - static_cast<int>(location.y) >= static_cast<int>(5 * GAME_HEIGHT / 6) && lvl->curY > GAME_HEIGHT)
-	{
-		lvl->curY -= static_cast<int>(GAME_HEIGHT / 12);
-		player->SetPlayerPos(location);
-	}
+	MovingScreen(player, lvl);
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(as->renderer);
 	scr->GenerateScreen();

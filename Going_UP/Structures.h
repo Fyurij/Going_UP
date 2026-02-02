@@ -24,6 +24,6 @@ struct GameLevel
 {
 	int maxX;// = GAME_WIDTH;
 	int maxY;// = GAME_HEIGHT * 5;
-	//int curX;
+	int curX;
 	int curY;
 };
