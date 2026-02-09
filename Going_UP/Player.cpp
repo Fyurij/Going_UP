@@ -8,7 +8,7 @@ bool Player::IsGroundOnPlatform(double time)
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if ( ( player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x ) && static_cast<int>(player.y + 1) == platforms[i].start.y && speedUp < 0)
+		if ( ( player.x >= platforms[i].start.x && player.x < platforms[i].finish.x ) && static_cast<int>(player.y + 1) == platforms[i].start.y && speedUp < 0)
 		{
 			saveHeight = platforms[i].start.y;
 			platform = platforms[i];
@@ -24,7 +24,7 @@ void Player::CheckStayingOnGround()
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if ((player.x < platform.start.x || player.x > platform.finish.x) && (!CheckBottom() || player.y + 2 != lvl->maxY))	//
+		if ((player.x < platform.start.x || player.x >= platform.finish.x) && (!CheckBottom() || player.y + 2 != lvl->maxY))	//
 		{
 			onGround = false;
 			return;
@@ -38,7 +38,7 @@ void Player::HitAbove(double time)
 	std::vector<Rectangle> platforms = plat->GetPlatforms();
 	for (int i = 0; i < platforms.size(); ++i)
 	{
-		if ( ( (player.x >= platforms[i].start.x && player.x <= platforms[i].finish.x) && ( static_cast<int>(player.y) > platforms[i].start.y && static_cast<int>(std::round(player.y - 1)) <= platforms[i].start.y ) ) || static_cast<int>(player.y) <= 1 )
+		if ( ( (player.x >= platforms[i].start.x && player.x < platforms[i].finish.x) && ( static_cast<int>(player.y) > platforms[i].start.y && static_cast<int>(std::round(player.y - 1)) <= platforms[i].start.y ) ) || static_cast<int>(player.y) <= 1 )
 		{
 			speedUp = -3;
 			return;

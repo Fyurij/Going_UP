@@ -272,6 +272,12 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	{
 		player->MoveHorizontalInAir(TIME);
 	}
+	if (player->IsOnGround() || player->IsGroundOnPlatform(TIME))
+	{
+		Koordinates location = player->GetPlayerPos();
+		location.x = std::round(location.x);
+		player->SetPlayerPos(location);
+	}
 	MovingScreen(player, lvl);
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(as->renderer);
