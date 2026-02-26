@@ -16,6 +16,7 @@
 #include <memory>
 #include <chrono>
 #include <fstream>
+#include <thread>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ double TIME;
 double speedUp = 0;
 double speedHorizont = 0;
 
-
+bool movingScreen = false;
 
 void SetRect(SDL_FRect* r, int i, int j)
 {
@@ -90,7 +91,7 @@ public:
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == (GAME_HEIGHT - 1) && lvl->curY == lvl->maxY)
+				if (i == (GAME_HEIGHT - 1) && lvl->curY >= lvl->maxY)
 				{
 					screen[i][j] = Pixel::Border;
 				}
@@ -114,9 +115,9 @@ public:
 			int j = 0;
 			while (plats[i].start.x + j < plats[i].finish.x)
 			{
-				if (plats[i].start.y <= lvl->curY && plats[i].start.y >= lvl->curY - GAME_HEIGHT && plats[i].start.y != lvl->curY && plats[i].start.x + j <= lvl->curX && plats[i].start.x + j >= lvl->curX - GAME_WIDTH)
+				if (plats[i].start.y <= lvl->curY && plats[i].start.y >= lvl->curY - GAME_HEIGHT && std::round(plats[i].start.y - lvl->curY) != 0 && plats[i].start.x + j <= lvl->curX && plats[i].start.x + j >= lvl->curX - GAME_WIDTH)
 				{
-					screen[GAME_HEIGHT - (lvl->curY - plats[i].start.y)][GAME_WIDTH - (lvl->curX - plats[i].start.x) + j] = Pixel::Platform;
+					screen[GAME_HEIGHT - std::round(lvl->curY - plats[i].start.y)][GAME_WIDTH - std::round(lvl->curX - plats[i].start.x) + j] = Pixel::Platform;
 				}
 				++j;
 			}
@@ -147,51 +148,59 @@ void ScreenInit(GameLevel* lvl)
 	lvl->maxY = GAME_HEIGHT * 5;
 }
 
-SDL_AppResult KeyEvent(GameLevel* lvl, SDL_Scancode keyCode, std::shared_ptr<Player> player)
+SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player> player)
 {
-	switch (keyCode)
+	if (keys[SDL_SCANCODE_ESCAPE])
 	{
-	case SDL_SCANCODE_ESCAPE:
 		return SDL_APP_SUCCESS;
-	case SDL_SCANCODE_R:
+	}
+	if (keys[SDL_SCANCODE_R])
+	{
 		ScreenInit(lvl);
-		break;
-	case SDL_SCANCODE_UP:
+	}
+	if (keys[SDL_SCANCODE_UP])
+	{
 		if (player->IsOnGround())
 		{
 			player->SpeedUp();
 			player->SetOnGround(false);
 		}
-		break;
-	case SDL_SCANCODE_DOWN:
+	}
+	if (keys[SDL_SCANCODE_DOWN])
+	{
 		Koordinates pos = player->GetPlayerPos();
 		if (lvl->curY != lvl->maxY && lvl->curY - pos.y < 2 * GAME_HEIGHT / 3)
 		{
-			lvl->curY += 1;
+			lvl->curY += 0.1;
 		}
-		break;
-	case SDL_SCANCODE_LEFT:
+		movingScreen = true;
+		player->SetPlayerPos(pos);
+	}
+	else
+	{
+		movingScreen = false;
+	}
+	if (keys[SDL_SCANCODE_LEFT])
+	{
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedLeft();
 		}
-		else
+		else if (player->IsOnGround())
 		{
-			player->MoveLeft();
+			player->MoveLeft(TIME);
 		}
-		break;
-	case SDL_SCANCODE_RIGHT:
+	}
+	if (keys[SDL_SCANCODE_RIGHT])
+	{
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedRight();
 		}
-		else
+		else if (player->IsOnGround())
 		{
-			player->MoveRight();
+			player->MoveRight(TIME);
 		}
-		break;
-	default:
-		break;
 	}
 	return SDL_APP_CONTINUE;
 }
@@ -255,7 +264,11 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	SDL_FRect r;
 	int ct;
 
-	Log(as);
+	bool playerMoving = false;
+
+	std::thread logThread(Log, as);
+	//Log(as);
+
 	std::chrono::time_point<std::chrono::steady_clock> current = std::chrono::steady_clock::now();
 	TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
 	while (TIME < 5)
@@ -267,12 +280,28 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 	int color = 0;
 
+	const bool* keys = SDL_GetKeyboardState(NULL);
+	if (keys[SDL_SCANCODE_ESCAPE] || keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_R])
+	{
+		KeyEvent(lvl, keys, player);
+		playerMoving = true;
+	}
+	else
+	{
+		playerMoving = false;
+	}
+
+	if (!movingScreen)		//TODO
+	{
+		lvl->curY = std::round(lvl->curY);
+	}
+
 	player->Move(TIME);
 	if (!player->IsOnGround())
 	{
 		player->MoveHorizontalInAir(TIME);
 	}
-	if (player->IsOnGround() || player->IsGroundOnPlatform(TIME))
+	if ((player->IsOnGround() || player->IsGroundOnPlatform(TIME)) && !playerMoving)
 	{
 		Koordinates location = player->GetPlayerPos();
 		location.x = std::round(location.x);
@@ -309,19 +338,21 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 		}
 	}
 	SDL_RenderPresent(as->renderer);
+	logThread.join();
 	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
+	//const bool* keys = SDL_GetKeyboardState(NULL);
 	GameLevel* lvl = &((AppState*)appstate)->level;
 	std::shared_ptr<Player> player = ((AppState*)appstate)->player;
 	switch (event->type)
 	{
 	case SDL_EVENT_QUIT:
 		return SDL_APP_SUCCESS;
-	case SDL_EVENT_KEY_DOWN:
-		return KeyEvent(lvl, event->key.scancode, player);
+	//case SDL_EVENT_KEY_DOWN:
+		//return KeyEvent(lvl, keys, player);
 	default:
 		break;
 	}

@@ -52,7 +52,7 @@ void Player::Move(double time)
 	{
 		HitAbove(time);
 		player.y -= speedUp * (time / divide);
-		speedUp -= 400 * (time / divide);
+		speedUp -= 200 * (time / divide);
 	}
 	else
 	{
@@ -84,36 +84,38 @@ void Player::MoveHorizontalInAir(double time)
 	}
 }
 
-void Player::MoveRight()
+void Player::MoveRight(double time)
 {
-	if (player.x + 1 < lvl->maxX - 2)
+	if (player.x + 1 < lvl->maxX - 1)
 	{
-		++player.x;
+		//++player.x;
+		player.x += abs(20) * (time / divide);
 	}
 }
 
-void Player::MoveLeft()
+void Player::MoveLeft(double time)
 {
-	if (player.x - 1 > 1)
+	if (player.x - 1 > 0)
 	{
-		--player.x;
+		//--player.x;
+		player.x -= 20 * (time / divide);
 	}
 }
 
 void Player::SpeedUp()
 {
-	speedUp = 100;
+	speedUp = 75;
 }
 
 void Player::SpeedLeft()
 {
-	speedHorizont = 40;
+	speedHorizont = 20;
 	movingHorizontal = true;
 }
 
 void Player::SpeedRight()
 {
-	speedHorizont = -40;
+	speedHorizont = -20;
 	movingHorizontal = true;
 }
 

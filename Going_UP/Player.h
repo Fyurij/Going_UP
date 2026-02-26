@@ -38,8 +38,8 @@ public:
 	void HitAbove(double time);
 	void Move(double time);
 	void MoveHorizontalInAir(double time);
-	void MoveRight();
-	void MoveLeft();
+	void MoveRight(double time);
+	void MoveLeft(double time);
 	void SpeedUp();
 	void SpeedLeft();
 	void SpeedRight();
