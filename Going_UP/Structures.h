@@ -5,7 +5,9 @@ enum class Pixel
 	Empty,
 	Border,
 	Platform,
-	Player
+	Player,
+	Artifact,
+	Exit
 };
 
 struct Koordinates

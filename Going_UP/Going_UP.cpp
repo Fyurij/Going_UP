@@ -43,19 +43,88 @@ void SetRect(SDL_FRect* r, int i, int j)
 	r->h = r->w = BLOCK_SIZE_IN_PIXELS;
 }
 
+
+struct Artifact
+{
+	Koordinates object;
+	bool isCollected;
+};
+
+class ArtifactManager
+{
+private:
+	GameLevel* lvl;
+	std::vector<Artifact> artifacts;
+	int max = 3;
+	int collected = 0;
+public:
+	ArtifactManager(GameLevel* lvl_)
+		:lvl(lvl_)
+	{
+		std::string filename = "../config/artifacts.txt";
+		std::ifstream file(filename);
+		if (!file.is_open())
+		{
+			std::cout << "Error..." << std::endl;
+			return;
+		}
+		while (!file.eof())
+		{
+			double x;
+			double y;
+			int check;
+			file >> x;
+			file >> y;
+			file >> check;
+			if (check == 1)
+			{
+				artifacts.push_back({ x, lvl->maxY - y });
+			}
+		}
+		file.close();
+	}
+
+	void CollectingArtifact(Koordinates player)
+	{
+		for (int i = 0; i < artifacts.size(); ++i)
+		{
+			if (std::round(player.y) == artifacts[i].object.y && std::round(player.x) == artifacts[i].object.x)
+			{
+				artifacts[i].isCollected = true;
+				++collected;
+			}
+		}
+	}
+
+	std::vector<Koordinates> GetArtifactsPos()
+	{
+		std::vector<Koordinates> artifactsPos;
+		for (int i = 0; i < artifacts.size(); ++i)
+		{
+			if (!artifacts[i].isCollected)
+			{
+				artifactsPos.push_back(artifacts[i].object);
+			}
+		}
+		return artifactsPos;
+	}
+};
+
 class Screen
 {
 private:
 	std::vector<std::vector<Pixel>> screen;
 	GameLevel* lvl;
-	shared_ptr<Platforms> platforms;
+	std::shared_ptr<Platforms> platforms;
 	std::shared_ptr<Player> player;
+	std::shared_ptr<ArtifactManager> artifacts;
 public:
-	Screen(GameLevel* lvl_, std::shared_ptr<Player> player_, shared_ptr<Platforms> platforms_)
+	Screen(GameLevel* lvl_, std::shared_ptr<Player> player_, shared_ptr<Platforms> platforms_, std::shared_ptr<ArtifactManager> artifacts_)
 		:lvl(lvl_)
 		, screen(GAME_HEIGHT, std::vector(GAME_WIDTH, Pixel::Empty))
 		, platforms(platforms_)
 		, player(player_)
+		, artifacts(artifacts_)
 	{}
 
 	bool CheckCollision(Koordinates nextPos)
@@ -82,26 +151,51 @@ public:
 	void GenerateScreen()
 	{
 		ClearScreen();
+		int visibleDoorHeight = 0;
+		int maxDoorHeight = 7;
 		Koordinates playerPos = player->GetPlayerPos();
 		for (int i = 0; i < screen.size(); ++i)
 		{
+			visibleDoorHeight = maxDoorHeight - (lvl->maxY - std::round(lvl->curY));
 			for (int j = 0; j < screen[i].size(); ++j)
 			{
-				if (i == 0 && lvl->curY == GAME_HEIGHT)
+				if (i == 0 && std::round(lvl->curY) == GAME_HEIGHT)
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (i == (GAME_HEIGHT - 1) && lvl->curY >= lvl->maxY)
+				if (i == (GAME_HEIGHT - 1) && std::round(lvl->curY) >= lvl->maxY)
 				{
 					screen[i][j] = Pixel::Border;
 				}
-				if (j == 0 && lvl->curX == GAME_WIDTH)
+				if (j == 0 && std::round(lvl->curX) == GAME_WIDTH)
 				{
-					screen[i][j] = Pixel::Border;
+					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT)
+					{
+						screen[i][j] = Pixel::Exit;
+						if (std::round(lvl->curY) >= lvl->maxY && i == GAME_HEIGHT - 1)
+						{
+							screen[i][j] = Pixel::Border;
+						}
+					}
+					else
+					{
+						screen[i][j] = Pixel::Border;
+					}
 				}
-				if (j == (GAME_WIDTH - 1) && lvl->curX == lvl->maxX)
+				if (j == (GAME_WIDTH - 1) && std::round(lvl->curX) == lvl->maxX)
 				{
-					screen[i][j] = Pixel::Border;
+					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT)
+					{
+						screen[i][j] = Pixel::Exit;
+						if (std::round(lvl->curY) >= lvl->maxY && i == GAME_HEIGHT - 1)
+						{
+							screen[i][j] = Pixel::Border;
+						}
+					}
+					else
+					{
+						screen[i][j] = Pixel::Border;
+					}
 				}
 				if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(std::round(lvl->curX - playerPos.x)) && static_cast<int>(lvl->curY - playerPos.y) > 0 && static_cast<int>(lvl->curX - playerPos.x) > 0)
 				{
@@ -122,6 +216,14 @@ public:
 				++j;
 			}
 		}
+		std::vector<Koordinates> artifactsPos = artifacts->GetArtifactsPos();
+		for (int i = 0; i < artifactsPos.size(); ++i)
+		{
+			if (artifactsPos[i].y < lvl->curY && artifactsPos[i].y > lvl->curY - GAME_HEIGHT && artifactsPos[i].x > lvl->curX - GAME_WIDTH && artifactsPos[i].x < lvl->curX && std::round(lvl->curY - artifactsPos[i].y) != 0 && std::round(lvl->curX - artifactsPos[i].x) != 0)
+			{
+				screen[GAME_HEIGHT - std::round(lvl->curY - artifactsPos[i].y)][GAME_WIDTH - std::round(lvl->curX - artifactsPos[i].x)] = Pixel::Artifact;
+			}
+		}
 	}
 
 	std::vector<std::vector<Pixel>>& GetScreen()
@@ -137,6 +239,7 @@ struct AppState
 	GameLevel level;
 	Screen screen;
 	std::shared_ptr<Player> player;
+	std::shared_ptr<ArtifactManager> artifacts;
 	std::chrono::time_point<std::chrono::steady_clock> prevLog;
 };
 
@@ -297,6 +400,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	}
 
 	player->Move(TIME);
+	as->artifacts->CollectingArtifact(player->GetPlayerPos());
 	if (!player->IsOnGround())
 	{
 		player->MoveHorizontalInAir(TIME);
@@ -326,9 +430,15 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 				SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 				break;
 			case Pixel::Platform:
-				SDL_SetRenderDrawColor(as->renderer, 0, 180, 180, SDL_ALPHA_OPAQUE);
+				SDL_SetRenderDrawColor(as->renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
 				break;
 			case Pixel::Player:
+				SDL_SetRenderDrawColor(as->renderer, 160, 0, 255, SDL_ALPHA_OPAQUE);
+				break;
+			case Pixel::Artifact:
+				SDL_SetRenderDrawColor(as->renderer, 255, 165, 0, SDL_ALPHA_OPAQUE);
+				break;
+			case Pixel::Exit:
 				SDL_SetRenderDrawColor(as->renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 				break;
 			default:
@@ -391,9 +501,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT);
 
+	as->artifacts = std::make_shared<ArtifactManager>(&as->level);
+
 	as->player = std::make_shared<Player>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->level.maxY, BLOCK_SIZE_IN_PIXELS, plat);
 
-	as->screen = Screen(&as->level, as->player, plat);
+	as->screen = Screen(&as->level, as->player, plat, as->artifacts);
 
 	return SDL_APP_CONTINUE;
 }
