@@ -19,7 +19,15 @@ FetchContent_Declare(
 	GIT_TAG a96677bdf6b4acb84af4ec294e5f60a4e8cbbe03
 )
 
+FetchContent_Declare(
+	JSON
+	GIT_REPOSITORY https://github.com/nlohmann/json
+	GIT_TAG 9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03
+)
+
 FetchContent_MakeAvailable(SDL)
+
+FetchContent_MakeAvailable(JSON)
 
 # Включите подпроекты.
 add_subdirectory ("Going_UP")

@@ -3,13 +3,15 @@
 #
 
 # Добавьте источник в исполняемый файл этого проекта.
-add_executable (Going_UP "Going_UP.cpp" "Player.cpp" "Player.h" "Structures.h" "Going_UP.h" "Platforms.h" "Platforms.cpp")
+add_executable (Going_UP "Going_UP.cpp" "Player.cpp" "Player.h" "Structures.h" "Going_UP.h" "Platforms.h" "Platforms.cpp" "Config.h" "Config.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Going_UP PROPERTY CXX_STANDARD 20)
 endif()
 
 target_link_libraries(Going_UP PRIVATE SDL3::SDL3)
+
+target_link_libraries(Going_UP PRIVATE nlohmann_json::nlohmann_json)
 
 add_custom_command(
     TARGET Going_UP POST_BUILD

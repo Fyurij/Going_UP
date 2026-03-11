@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Structures.h"
+#include "Config.h"
 
 #include <fstream>
 #include <vector>
@@ -14,35 +15,17 @@ private:
 	std::vector<Rectangle> platforms;
 	int gameWidth;
 	int gameHeight;
+	std::shared_ptr<Config> config;
 public:
 	bool CheckPlatformPlace(Rectangle& rect);
 
-	Platforms(GameLevel* lvl_, int gameWidth_, int gameHeight_)
+	Platforms(GameLevel* lvl_, int gameWidth_, int gameHeight_, std::shared_ptr<Config> config_)
 		:lvl(lvl_)
 		, gameWidth(gameWidth_)
 		, gameHeight(gameHeight_)
+		, config(config_)
 	{
-		const std::string filename = "../config/platforms.txt";
-		std::ifstream file(filename);
-		if (!file.is_open())
-		{
-			std::cout << "Error..." << std::endl;
-			return;
-		}
-		while (!file.eof())
-		{
-			Rectangle rect;
-			file >> rect.start.x;
-			file >> rect.start.y;
-			file >> rect.finish.x;
-			file >> rect.finish.y;
-			rect.start.y = lvl->maxY - rect.start.y;
-			rect.finish.y = lvl->maxY - rect.finish.y;
-			if (CheckPlatformPlace(rect))
-			{
-				platforms.push_back(rect);
-			}
-		}
+		platforms = config_->GetPlatforms();
 	}
 
 	std::vector<Rectangle>& GetPlatforms();

@@ -119,12 +119,12 @@ void Player::SpeedRight()
 	movingHorizontal = true;
 }
 
-Koordinates& Player::GetPlayerPos()
+Coordinates& Player::GetPlayerPos()
 {
 	return player;
 }
 
-void Player::SetPlayerPos(Koordinates& koord)
+void Player::SetPlayerPos(Coordinates& koord)
 {
 	player.y = koord.y;
 	player.x = koord.x;
@@ -148,4 +148,16 @@ bool Player::CheckBottom()
 bool Player::IsMovingHorizontal()
 {
 	return movingHorizontal;
+}
+
+void Player::TeleportToRightSide()
+{
+	player.x = lvl->maxX - 2;
+	lvl->curX = lvl->maxX;
+}
+
+void Player::TeleportToLeftSide()
+{
+	player.x = 1;
+	lvl->curX = gameWidth;
 }

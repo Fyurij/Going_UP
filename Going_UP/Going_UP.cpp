@@ -7,6 +7,7 @@
 #include "Structures.h"
 #include "Player.h"
 #include "Platforms.h"
+#include "Config.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -17,6 +18,7 @@
 #include <chrono>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 using namespace std;
 
@@ -43,13 +45,6 @@ void SetRect(SDL_FRect* r, int i, int j)
 	r->h = r->w = BLOCK_SIZE_IN_PIXELS;
 }
 
-
-struct Artifact
-{
-	Koordinates object;
-	bool isCollected;
-};
-
 class ArtifactManager
 {
 private:
@@ -57,34 +52,18 @@ private:
 	std::vector<Artifact> artifacts;
 	int max = 3;
 	int collected = 0;
+	std::string side;
+	std::shared_ptr<Config> config;
 public:
-	ArtifactManager(GameLevel* lvl_)
+	ArtifactManager(GameLevel* lvl_, std::shared_ptr<Config> config_)
 		:lvl(lvl_)
+		,config(config_)
 	{
-		std::string filename = "../config/artifacts.txt";
-		std::ifstream file(filename);
-		if (!file.is_open())
-		{
-			std::cout << "Error..." << std::endl;
-			return;
-		}
-		while (!file.eof())
-		{
-			double x;
-			double y;
-			int check;
-			file >> x;
-			file >> y;
-			file >> check;
-			if (check == 1)
-			{
-				artifacts.push_back({ x, lvl->maxY - y });
-			}
-		}
-		file.close();
+		artifacts = config->GetArtifacts();
+		side = config->GetSide();
 	}
 
-	void CollectingArtifact(Koordinates player)
+	void CollectingArtifact(Coordinates player)
 	{
 		for (int i = 0; i < artifacts.size(); ++i)
 		{
@@ -96,9 +75,9 @@ public:
 		}
 	}
 
-	std::vector<Koordinates> GetArtifactsPos()
+	std::vector<Coordinates> GetArtifactsPos()
 	{
-		std::vector<Koordinates> artifactsPos;
+		std::vector<Coordinates> artifactsPos;
 		for (int i = 0; i < artifacts.size(); ++i)
 		{
 			if (!artifacts[i].isCollected)
@@ -107,6 +86,24 @@ public:
 			}
 		}
 		return artifactsPos;
+	}
+
+	bool IsAllArtifactsCollected()
+	{
+		/*for (int i = 0; i < artifacts.size(); ++i)
+		{
+			if (!artifacts[i].isCollected)
+			{
+				return false;
+			}
+		}
+		return true;*/
+		return std::all_of(artifacts.cbegin(), artifacts.cend(), [](const auto&/* const Artifact& */ art) {return art.isCollected;});
+	}
+
+	std::string WhichSideDoor()
+	{
+		return side;
 	}
 };
 
@@ -127,7 +124,7 @@ public:
 		, artifacts(artifacts_)
 	{}
 
-	bool CheckCollision(Koordinates nextPos)
+	bool CheckCollision(Coordinates nextPos)
 	{
 		int y = nextPos.y;
 		if (screen[y][nextPos.x] == Pixel::Empty)
@@ -153,7 +150,8 @@ public:
 		ClearScreen();
 		int visibleDoorHeight = 0;
 		int maxDoorHeight = 7;
-		Koordinates playerPos = player->GetPlayerPos();
+		Coordinates playerPos = player->GetPlayerPos();
+		std::string side = artifacts->WhichSideDoor();
 		for (int i = 0; i < screen.size(); ++i)
 		{
 			visibleDoorHeight = maxDoorHeight - (lvl->maxY - std::round(lvl->curY));
@@ -169,9 +167,9 @@ public:
 				}
 				if (j == 0 && std::round(lvl->curX) == GAME_WIDTH)
 				{
-					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT)
+					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT && side == "left")
 					{
-						screen[i][j] = Pixel::Exit;
+						screen[i][j] = Pixel::Door;
 						if (std::round(lvl->curY) >= lvl->maxY && i == GAME_HEIGHT - 1)
 						{
 							screen[i][j] = Pixel::Border;
@@ -184,9 +182,9 @@ public:
 				}
 				if (j == (GAME_WIDTH - 1) && std::round(lvl->curX) == lvl->maxX)
 				{
-					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT)
+					if (i > GAME_HEIGHT - visibleDoorHeight && i < GAME_HEIGHT && side == "right")
 					{
-						screen[i][j] = Pixel::Exit;
+						screen[i][j] = Pixel::Door;
 						if (std::round(lvl->curY) >= lvl->maxY && i == GAME_HEIGHT - 1)
 						{
 							screen[i][j] = Pixel::Border;
@@ -216,7 +214,7 @@ public:
 				++j;
 			}
 		}
-		std::vector<Koordinates> artifactsPos = artifacts->GetArtifactsPos();
+		std::vector<Coordinates> artifactsPos = artifacts->GetArtifactsPos();
 		for (int i = 0; i < artifactsPos.size(); ++i)
 		{
 			if (artifactsPos[i].y < lvl->curY && artifactsPos[i].y > lvl->curY - GAME_HEIGHT && artifactsPos[i].x > lvl->curX - GAME_WIDTH && artifactsPos[i].x < lvl->curX && std::round(lvl->curY - artifactsPos[i].y) != 0 && std::round(lvl->curX - artifactsPos[i].x) != 0)
@@ -224,6 +222,15 @@ public:
 				screen[GAME_HEIGHT - std::round(lvl->curY - artifactsPos[i].y)][GAME_WIDTH - std::round(lvl->curX - artifactsPos[i].x)] = Pixel::Artifact;
 			}
 		}
+	}
+
+	bool IsNextMoveExit(Coordinates character)
+	{
+		if (std::round(lvl->curY) != std::round(character.y) && std::round(lvl->curX) != std::round(character.x) && screen[GAME_HEIGHT - std::round(lvl->curY - character.y)][GAME_WIDTH - std::round(lvl->curX - character.x)] == Pixel::Door && artifacts->IsAllArtifactsCollected())
+		{
+			return true;
+		}
+		return false;
 	}
 
 	std::vector<std::vector<Pixel>>& GetScreen()
@@ -240,6 +247,7 @@ struct AppState
 	Screen screen;
 	std::shared_ptr<Player> player;
 	std::shared_ptr<ArtifactManager> artifacts;
+	std::shared_ptr<Config> config;
 	std::chrono::time_point<std::chrono::steady_clock> prevLog;
 };
 
@@ -251,7 +259,7 @@ void ScreenInit(GameLevel* lvl)
 	lvl->maxY = GAME_HEIGHT * 5;
 }
 
-SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player> player)
+SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player> player, Screen& screen)
 {
 	if (keys[SDL_SCANCODE_ESCAPE])
 	{
@@ -271,12 +279,12 @@ SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player>
 	}
 	if (keys[SDL_SCANCODE_DOWN])
 	{
-		Koordinates pos = player->GetPlayerPos();
+		Coordinates pos = player->GetPlayerPos();
 		if (lvl->curY != lvl->maxY && lvl->curY - pos.y < 2 * GAME_HEIGHT / 3)
 		{
 			lvl->curY += 0.1;
+			movingScreen = true;
 		}
-		movingScreen = true;
 		player->SetPlayerPos(pos);
 	}
 	else
@@ -285,6 +293,12 @@ SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player>
 	}
 	if (keys[SDL_SCANCODE_LEFT])
 	{
+		Coordinates pos = player->GetPlayerPos();
+		--pos.x;
+		if (screen.IsNextMoveExit(pos))
+		{
+			player->TeleportToRightSide();
+		}
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedLeft();
@@ -296,6 +310,12 @@ SDL_AppResult KeyEvent(GameLevel* lvl, const bool* keys, std::shared_ptr<Player>
 	}
 	if (keys[SDL_SCANCODE_RIGHT])
 	{
+		Coordinates pos = player->GetPlayerPos();
+		++pos.x;
+		if (screen.IsNextMoveExit(pos))
+		{
+			player->TeleportToLeftSide();
+		}
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
 		{
 			player->SpeedRight();
@@ -313,7 +333,7 @@ void Log(AppState* as)
 	std::chrono::time_point<std::chrono::steady_clock> current = std::chrono::steady_clock::now();
 	TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
 	std::cout << "Frame time: " << std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog) << std::endl;
-	Koordinates play = as->player->GetPlayerPos();
+	Coordinates play = as->player->GetPlayerPos();
 	std::cout << "Player x: " << play.x << " y: " << play.y << std::endl;
 	std::cout << "Current Y: " << as->level.curY << std::endl;
 	std::cout << "Current X: " << as->level.curX << std::endl;
@@ -322,7 +342,7 @@ void Log(AppState* as)
 
 void MovingScreen(shared_ptr<Player> player, GameLevel* lvl)
 {
-	Koordinates location = player->GetPlayerPos();
+	Coordinates location = player->GetPlayerPos();
 	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
 	{
 		lvl->curY += static_cast<int>(GAME_HEIGHT / 12);
@@ -386,7 +406,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	const bool* keys = SDL_GetKeyboardState(NULL);
 	if (keys[SDL_SCANCODE_ESCAPE] || keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_R])
 	{
-		KeyEvent(lvl, keys, player);
+		KeyEvent(lvl, keys, player, as->screen);
 		playerMoving = true;
 	}
 	else
@@ -400,6 +420,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	}
 
 	player->Move(TIME);
+
 	as->artifacts->CollectingArtifact(player->GetPlayerPos());
 	if (!player->IsOnGround())
 	{
@@ -407,10 +428,11 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	}
 	if ((player->IsOnGround() || player->IsGroundOnPlatform(TIME)) && !playerMoving)
 	{
-		Koordinates location = player->GetPlayerPos();
+		Coordinates location = player->GetPlayerPos();
 		location.x = std::round(location.x);
 		player->SetPlayerPos(location);
 	}
+
 	MovingScreen(player, lvl);
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(as->renderer);
@@ -438,8 +460,15 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 			case Pixel::Artifact:
 				SDL_SetRenderDrawColor(as->renderer, 255, 165, 0, SDL_ALPHA_OPAQUE);
 				break;
-			case Pixel::Exit:
-				SDL_SetRenderDrawColor(as->renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+			case Pixel::Door:
+				if (!as->artifacts->IsAllArtifactsCollected())
+				{
+					SDL_SetRenderDrawColor(as->renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+				}
+				else
+				{
+					SDL_SetRenderDrawColor(as->renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+				}
 				break;
 			default:
 				break;
@@ -499,11 +528,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	ScreenInit(&as->level);
 
-	shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT);
+	as->config = std::make_shared<Config>();
 
-	as->artifacts = std::make_shared<ArtifactManager>(&as->level);
+	shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->config);
 
-	as->player = std::make_shared<Player>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->level.maxY, BLOCK_SIZE_IN_PIXELS, plat);
+	as->artifacts = std::make_shared<ArtifactManager>(&as->level, as->config);
+
+	as->player = std::make_shared<Player>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->level.maxY, BLOCK_SIZE_IN_PIXELS, plat, as->config);
 
 	as->screen = Screen(&as->level, as->player, plat, as->artifacts);
 

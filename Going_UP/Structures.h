@@ -7,10 +7,10 @@ enum class Pixel
 	Platform,
 	Player,
 	Artifact,
-	Exit
+	Door
 };
 
-struct Koordinates
+struct Coordinates
 {
 	double x;
 	double y;
@@ -18,8 +18,8 @@ struct Koordinates
 
 struct Rectangle
 {
-	Koordinates start;
-	Koordinates finish;
+	Coordinates start;
+	Coordinates finish;
 };
 
 struct GameLevel
@@ -28,4 +28,10 @@ struct GameLevel
 	int maxY;// = GAME_HEIGHT * 5;
 	int curX;
 	double curY;
+};
+
+struct Artifact
+{
+	Coordinates object;
+	bool isCollected;
 };

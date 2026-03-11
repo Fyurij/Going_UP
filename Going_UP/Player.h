@@ -1,13 +1,15 @@
 #pragma once
 #include "Structures.h"
 #include "Platforms.h"
+#include "Config.h"
 
 class Player
 {
 private:
 	int saveHeight;
-	Koordinates player;
+	Coordinates player;
 	std::shared_ptr<Platforms> plat;
+	std::shared_ptr<Config> config;
 	GameLevel* lvl;
 	bool onGround = true;
 	bool movingHorizontal = false;
@@ -20,7 +22,7 @@ private:
 	const int divide = 1000;
 	Rectangle platform;
 public:
-	Player(GameLevel* lvl_, int gameWidth_, int gameHeight_, int maxY_, int blockSizeInPixels_, std::shared_ptr<Platforms> plat_)
+	Player(GameLevel* lvl_, int gameWidth_, int gameHeight_, int maxY_, int blockSizeInPixels_, std::shared_ptr<Platforms> plat_, std::shared_ptr<Config> config_)
 		: lvl(lvl_)
 		, gameWidth(gameWidth_)
 		, gameHeight(gameHeight_)
@@ -28,6 +30,7 @@ public:
 		, plat(plat_)
 		, maxY(maxY_)
 		, saveHeight(maxY_ - 1)
+		, config(config_)
 	{
 		player.x = gameWidth_ / 2;
 		player.y = lvl->maxY - 2;
@@ -43,10 +46,12 @@ public:
 	void SpeedUp();
 	void SpeedLeft();
 	void SpeedRight();
-	Koordinates& GetPlayerPos();
-	void SetPlayerPos(Koordinates& koord);
+	Coordinates& GetPlayerPos();
+	void SetPlayerPos(Coordinates& koord);
 	void SetOnGround(bool ground);
 	bool IsOnGround();
 	bool CheckBottom();
 	bool IsMovingHorizontal();
+	void TeleportToRightSide();
+	void TeleportToLeftSide();
 };
