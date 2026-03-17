@@ -20,8 +20,6 @@
 #include <thread>
 #include <algorithm>
 
-using namespace std;
-
 int BLOCK_SIZE_IN_PIXELS = 15;
 
 int GAME_WIDTH = 70;
@@ -116,7 +114,7 @@ private:
 	std::shared_ptr<Player> player;
 	std::shared_ptr<ArtifactManager> artifacts;
 public:
-	Screen(GameLevel* lvl_, std::shared_ptr<Player> player_, shared_ptr<Platforms> platforms_, std::shared_ptr<ArtifactManager> artifacts_)
+	Screen(GameLevel* lvl_, std::shared_ptr<Player> player_, std::shared_ptr<Platforms> platforms_, std::shared_ptr<ArtifactManager> artifacts_)
 		:lvl(lvl_)
 		, screen(GAME_HEIGHT, std::vector(GAME_WIDTH, Pixel::Empty))
 		, platforms(platforms_)
@@ -340,7 +338,7 @@ void Log(AppState* as)
 	as->prevLog = current;
 }
 
-void MovingScreen(shared_ptr<Player> player, GameLevel* lvl)
+void MovingScreen(std::shared_ptr<Player> player, GameLevel* lvl)
 {
 	Coordinates location = player->GetPlayerPos();
 	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
@@ -382,7 +380,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	AppState* as = (AppState*)appstate;
 	GameLevel* lvl = &as->level;
 	Screen* scr = &as->screen;
-	shared_ptr<Player> player = as->player;
+	std::shared_ptr<Player> player = as->player;
 	const Uint64 now = SDL_GetTicks();
 	SDL_FRect r;
 	int ct;
@@ -528,9 +526,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	ScreenInit(&as->level);
 
-	as->config = std::make_shared<Config>();
+	as->config = std::make_shared<Config>(&as->level);
 
-	shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->config);
+	std::shared_ptr<Platforms> plat = std::make_shared<Platforms>(&as->level, GAME_WIDTH, GAME_HEIGHT, as->config);
 
 	as->artifacts = std::make_shared<ArtifactManager>(&as->level, as->config);
 

@@ -10,7 +10,8 @@
 
 using json = nlohmann::json;
 
-Config::Config()
+Config::Config(GameLevel* lvl_)
+	:lvl(lvl_)
 {
 	std::ifstream f("../config/settings.json");
 	if (!f.is_open())
@@ -34,7 +35,7 @@ std::vector<Artifact> Config::GetArtifacts()
 		{
 			Artifact temp;
 			temp.object.x = item["x"].get<double>();
-			temp.object.y = item["y"].get<double>();
+			temp.object.y = lvl->maxY - item["y"].get<double>();
 			temp.isCollected = false;
 			arts.push_back(temp);
 		}
@@ -49,9 +50,9 @@ std::vector<Rectangle> Config::GetPlatforms()
 	{
 		Rectangle temp;
 		temp.start.x = item["startX"].get<double>();
-		temp.start.y = item["startY"].get<double>();
+		temp.start.y = lvl->maxY - item["startY"].get<double>();
 		temp.finish.x = item["finishX"].get<double>();
-		temp.finish.y = item["finishY"].get<double>();
+		temp.finish.y = lvl->maxY - item["finishY"].get<double>();
 		platforms.push_back(temp);
 	}
 	return platforms;

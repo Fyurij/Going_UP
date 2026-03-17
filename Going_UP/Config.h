@@ -11,8 +11,9 @@ class Config
 {
 private:
 	json data;
+	GameLevel* lvl;
 public:
-	Config();
+	Config(GameLevel* lvl_);
 	std::string GetSide();
 	std::vector<Artifact> GetArtifacts();
 	std::vector<Rectangle> GetPlatforms();
