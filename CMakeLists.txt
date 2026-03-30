@@ -1,0 +1,49 @@
+﻿# CMakeList.txt: файл проекта CMake верхнего уровня; проведите глобальную конфигурацию
+# и включите сюда подпроекты.
+#
+cmake_minimum_required (VERSION 3.16)
+
+# Включение горячей перезагрузки для компиляторов MSVC, если поддерживается.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+endif()
+
+project ("Going_UP")
+
+include(FetchContent)
+
+FetchContent_Declare(
+	SDL
+	GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+	GIT_TAG a96677bdf6b4acb84af4ec294e5f60a4e8cbbe03
+)
+
+FetchContent_Declare(
+	JSON
+	GIT_REPOSITORY https://github.com/nlohmann/json
+	GIT_TAG 9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03
+)
+
+FetchContent_Declare(
+	SDL_TTF
+	GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
+	GIT_TAG a1ce3670aec736ecbf0936c43f2f0cc53aa61e5b
+)
+
+FetchContent_MakeAvailable(SDL)
+
+FetchContent_MakeAvailable(JSON)
+
+FetchContent_MakeAvailable(SDL_TTF)
+
+# Включите подпроекты.
+add_subdirectory ("Going_UP")
+
+add_custom_target(copy_config ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/config ${CMAKE_BINARY_DIR}/config
+    DEPENDS Going_UP)
+
+add_custom_target(copy_src ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src
+    DEPENDS Going_UP)
