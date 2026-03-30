@@ -21,7 +21,8 @@ public:
 		:lvl(lvl_)
 		, config(config_)
 	{
-		artifacts = config->GetArtifacts(max);
+		artifacts = config->GetArtifacts();
+		max = artifacts.size();
 		side = config->GetSide();
 	}
 

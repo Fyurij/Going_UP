@@ -17,7 +17,7 @@ private:
 public:
 	Config(GameLevel* lvl_);
 	std::string GetSide();
-	std::vector<Artifact> GetArtifacts(int& max);
+	std::vector<Artifact> GetArtifacts();
 	std::vector<Rectangle> GetPlatforms();
 	void LoadLevel();
 	bool UpdateLevelData();

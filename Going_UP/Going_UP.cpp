@@ -61,6 +61,7 @@ struct AppState
 	std::shared_ptr<Config> config;
 	std::shared_ptr<Platforms> plat;
 	std::chrono::time_point<std::chrono::steady_clock> prevLog;
+	bool endOfGame = false;
 };
 
 bool UpdateLevel(AppState* as)
@@ -159,7 +160,7 @@ SDL_AppResult KeyEvent(AppState* as, GameLevel* lvl, const bool* keys, std::shar
 
 			if (!UpdateLevel(as))
 			{
-				return SDL_APP_SUCCESS;
+				as->endOfGame = true;
 			}
 		}
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
@@ -181,7 +182,7 @@ SDL_AppResult KeyEvent(AppState* as, GameLevel* lvl, const bool* keys, std::shar
 
 			if (!UpdateLevel(as))
 			{
-				return SDL_APP_SUCCESS;
+				as->endOfGame = true;
 			}
 		}
 		if (!player->IsOnGround() && !player->IsMovingHorizontal())
@@ -255,6 +256,24 @@ std::string GetKnowCurrentNumOfArtifacts(std::shared_ptr<ArtifactManager> arts)
 	return "Artifacts " + std::to_string(arts->GetCollectedArtifacts()) + "/" + std::to_string(arts->GetMaxNumOfArtifacts());
 }
 
+class ThreadJoin
+{
+private:
+	std::thread uniqThread;
+public:
+	ThreadJoin(std::thread&& uniqThread_)
+		:uniqThread(std::move(uniqThread_))
+	{}
+
+	~ThreadJoin()
+	{
+		if (uniqThread.joinable())
+		{
+			uniqThread.join();
+		}
+	}
+};
+
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
 	AppState* as = (AppState*)appstate;
@@ -269,6 +288,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	bool playerMoving = false;
 
 	std::thread logThread(Log, as);
+	ThreadJoin thrd(std::move(logThread));
 
 	std::chrono::time_point<std::chrono::steady_clock> current = std::chrono::steady_clock::now();
 	TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
@@ -278,8 +298,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 		TIME = std::chrono::duration_cast<std::chrono::milliseconds>(current - as->prevLog).count();
 	}
 	as->prevLog = current;
-
-	int color = 0;
 
 	const bool* keys = SDL_GetKeyboardState(NULL);
 	if (keys[SDL_SCANCODE_ESCAPE] || keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_R])
@@ -291,6 +309,22 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	{
 		playerMoving = false;
 	}
+
+	if (as->endOfGame)
+	{
+		SDL_RenderClear(as->renderer);
+		std::string finish = "CONGRATULATIONS!\nYOU WIN!\nPress \"esc\" to exit";
+		TTF_SetTextString(text, finish.c_str(), 0);
+		int x = (WINDOW_WIDTH * BLOCK_SIZE_IN_PIXELS) / 3;
+		int y = (GAME_HEIGHT * BLOCK_SIZE_IN_PIXELS) / 3;
+		SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+		TTF_DrawRendererText(text, x, y);
+		SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+		SDL_RenderPresent(as->renderer);
+		return result;
+	}
+
+	int color = 0;
 
 	if (!movingScreen)		//TODO
 	{
@@ -376,19 +410,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 	TTF_DrawRendererText(text, x, y);
 
-	if (result == SDL_APP_SUCCESS)
-	{
-		SDL_RenderClear(as->renderer);
-		std::string finish = "CONGRATULATIONS!\nYOU WIN!\nPress \"esc\" to exit";
-		TTF_SetTextString(text, finish.c_str(), 0);
-		int x = WINDOW_WIDTH / 2;
-		int y = GAME_HEIGHT / 2;
-		SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-		TTF_DrawRendererText(text, x, y);
-	}
-
 	SDL_RenderPresent(as->renderer);
-	logThread.join();
 	return result;
 }
 
@@ -443,7 +465,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
-	font = TTF_OpenFont("../src/Pixelletters.ttf", 52);
+	font = TTF_OpenFont("../config/Font/Pixelletters.ttf", 52);
 	if (!font) 
 	{
 		SDL_Log("Couldn't open font: %s\n", SDL_GetError());

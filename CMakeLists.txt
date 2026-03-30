@@ -43,7 +43,3 @@ add_subdirectory ("Going_UP")
 add_custom_target(copy_config ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/config ${CMAKE_BINARY_DIR}/config
     DEPENDS Going_UP)
-
-add_custom_target(copy_src ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src
-    DEPENDS Going_UP)

@@ -15,7 +15,7 @@ Config::Config(GameLevel* lvl_)
 	:lvl(lvl_)
 	,currentLevel(1)
 {
-	std::string path = "../config";
+	std::string path = "../config/Level";
 	maxNumLevels = 0;
 	for (const auto& entry : std::filesystem::directory_iterator(path))
 	{
@@ -30,7 +30,7 @@ std::string Config::GetSide()
 	return data["side"].get<std::string>();
 }
 
-std::vector<Artifact> Config::GetArtifacts(int& max)
+std::vector<Artifact> Config::GetArtifacts()
 {
 	std::vector<Artifact> arts;
 	for (const auto& item : data["artifacts"])
@@ -44,7 +44,6 @@ std::vector<Artifact> Config::GetArtifacts(int& max)
 			arts.push_back(temp);
 		}
 	}
-	max = arts.size();
 	return arts;
 }
 
@@ -65,7 +64,7 @@ std::vector<Rectangle> Config::GetPlatforms()
 
 void Config::LoadLevel()
 {
-	std::string name = "../config/Level_" + std::to_string(currentLevel) + ".json";
+	std::string name = "../config/Level/Level_" + std::to_string(currentLevel) + ".json";
 	std::ifstream f(name);
 	if (!f.is_open())
 	{
