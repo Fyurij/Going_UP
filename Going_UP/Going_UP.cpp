@@ -26,11 +26,11 @@
 #include <thread>
 #include <algorithm>
 
-const int BLOCK_SIZE_IN_PIXELS = 30;
+const int BLOCK_SIZE_IN_PIXELS = 15;
 
-const int WINDOW_WIDTH = 50;
-const int GAME_WIDTH = 40;
-const int GAME_HEIGHT = 30;
+const int WINDOW_WIDTH = 70;
+const int GAME_WIDTH = 54;
+const int GAME_HEIGHT = 40;
 
 const int SDL_WINDOW_WIDTH = BLOCK_SIZE_IN_PIXELS * WINDOW_WIDTH;
 const int SDL_WINDOW_HEIGHT = BLOCK_SIZE_IN_PIXELS * GAME_HEIGHT;
@@ -181,7 +181,7 @@ SDL_AppResult KeyEvent(AppState* as, GameLevel* lvl, const bool* keys, std::shar
 	}
 	if (keys[SDL_SCANCODE_RIGHT])
 	{
-		Coordinates pos = player->GetPlayerPos();
+		Coordinates pos = player->GetPlayerEndPos();
 		++pos.x;
 		if (screen.IsNextMoveExit(pos))
 		{
@@ -219,7 +219,8 @@ void Log(AppState* as)
 void MovingScreen(std::shared_ptr<Player> player, GameLevel* lvl)
 {
 	Coordinates location = player->GetPlayerPos();
-	if (lvl->curY - static_cast<int>(location.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
+	Coordinates endLocation = player->GetPlayerEndPos();
+	if (lvl->curY - static_cast<int>(endLocation.y) <= static_cast<int>(GAME_HEIGHT / 6) && !player->CheckBottom() && lvl->curY < lvl->maxY)
 	{
 		lvl->curY += static_cast<int>(GAME_HEIGHT / 12);
 		if (lvl->curY > lvl->maxY)
@@ -235,7 +236,7 @@ void MovingScreen(std::shared_ptr<Player> player, GameLevel* lvl)
 			lvl->curY = GAME_HEIGHT;
 		}
 	}
-	if (lvl->curX - static_cast<int>(location.x) <= static_cast<int>(GAME_WIDTH / 6) && lvl->curX < lvl->maxX)
+	if (lvl->curX - static_cast<int>(endLocation.x) <= static_cast<int>(GAME_WIDTH / 6) && lvl->curX < lvl->maxX)
 	{
 		lvl->curX += 1;//static_cast<int>(GAME_WIDTH / 12);
 		if (lvl->curX > lvl->maxX)
@@ -375,8 +376,13 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 			case Pixel::Platform:
 				SDL_RenderTexture(as->renderer, texturePlatform, NULL, &r);
 				break;
-			case Pixel::Player:
+			case Pixel::PlayerStart:
+				r.h += (r.h * (player->GetPlayerSize() - 1));
+				r.w += (r.w * (player->GetPlayerSize() - 1));
 				SDL_RenderTexture(as->renderer, texturePlayer, NULL, &r);
+				j += player->GetPlayerSize() - 1;
+				r.h = BLOCK_SIZE_IN_PIXELS;
+				r.w = BLOCK_SIZE_IN_PIXELS;
 				break;
 			case Pixel::Artifact:
 				SDL_RenderTexture(as->renderer, textureArtifact, NULL, &r);

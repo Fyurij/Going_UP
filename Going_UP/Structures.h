@@ -6,6 +6,7 @@ enum class Pixel
 	Border,
 	Platform,
 	Player,
+	PlayerStart,
 	Artifact,
 	Door
 };

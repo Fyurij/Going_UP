@@ -35,6 +35,7 @@ void Screen::GenerateScreen()
 	int visibleDoorHeight = 0;
 	int maxDoorHeight = 7;
 	Coordinates playerPos = player->GetPlayerPos();
+	Coordinates playerEndPos = player->GetPlayerEndPos();
 	std::string side = artifacts->WhichSideDoor();
 	for (int i = 0; i < screen.size(); ++i)
 	{
@@ -79,9 +80,13 @@ void Screen::GenerateScreen()
 					screen[i][j] = Pixel::Border;
 				}
 			}
-			if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(std::round(lvl->curX - playerPos.x)) && static_cast<int>(lvl->curY - playerPos.y) > 0 && static_cast<int>(lvl->curX - playerPos.x) > 0)
+			if (i <= static_cast<int>(std::round(lvl->curY - playerPos.y)) && i >= static_cast<int>(std::round(lvl->curY - playerEndPos.y)) && j <= static_cast<int>(std::round(lvl->curX - playerPos.x)) && j >= static_cast<int>(std::round(lvl->curX - playerEndPos.x)) && static_cast<int>(lvl->curY - playerPos.y) > 0 && static_cast<int>(lvl->curY - playerEndPos.y) > 0 && static_cast<int>(lvl->curX - playerPos.x) > 0 && static_cast<int>(lvl->curX - playerEndPos.x) > 0)
 			{
 				screen[gameHeight - i][gameWidth - j] = Pixel::Player;
+			}
+			if (i == static_cast<int>(std::round(lvl->curY - playerPos.y)) && j == static_cast<int>(std::round(lvl->curX - playerPos.x)) && static_cast<int>(lvl->curY - playerPos.y) > 0 && static_cast<int>(lvl->curX - playerPos.x) > 0)
+			{
+				screen[gameHeight - i][gameWidth - j] = Pixel::PlayerStart;
 			}
 		}
 	}

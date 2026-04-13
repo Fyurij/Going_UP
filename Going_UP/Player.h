@@ -3,12 +3,15 @@
 #include "Platforms.h"
 #include "Config.h"
 
+// x = 10, y = 15, x = 11, y = 16
+
 class Player
 {
 private:
 	int saveHeight;
 	Coordinates player;
-	//std::shared_ptr<Platforms> plat;
+	Coordinates endPlayer;
+	int playerSize = 3;
 	std::shared_ptr<Config> config;
 	GameLevel* lvl;
 	bool onGround = true;
@@ -27,15 +30,16 @@ public:
 		, gameWidth(gameWidth_)
 		, gameHeight(gameHeight_)
 		, blockSizeInPixels(blockSizeInPixels_)
-		//, plat(plat_)
 		, maxY(maxY_)
 		, saveHeight(maxY_ - 1)
 		, config(config_)
 	{
 		player.x = gameWidth_ / 2;
-		player.y = lvl->maxY - 2;
+		player.y = maxY_ - 2;
+		UpdateEndPlayer();
 	}
 
+	void UpdateEndPlayer();
 	bool IsGroundOnPlatform(double time, std::shared_ptr<Platforms> plat);
 	void CheckStayingOnGround(std::shared_ptr<Platforms> plat);
 	void HitAbove(double time, std::shared_ptr<Platforms> plat);
@@ -47,6 +51,7 @@ public:
 	void SpeedLeft();
 	void SpeedRight();
 	Coordinates& GetPlayerPos();
+	Coordinates& GetPlayerEndPos();
 	void SetPlayerPos(Coordinates& koord);
 	void SetOnGround(bool ground);
 	bool IsOnGround();
@@ -55,4 +60,5 @@ public:
 	void TeleportToRightSide();
 	void TeleportToLeftSide();
 	void ResetPosition();
+	int GetPlayerSize();
 };
