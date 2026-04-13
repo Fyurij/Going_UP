@@ -14,7 +14,7 @@ project ("Going_UP")
 include(FetchContent)
 
 FetchContent_Declare(
-	SDL
+	SDL	#	3.2.22
 	GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
 	GIT_TAG a96677bdf6b4acb84af4ec294e5f60a4e8cbbe03
 )
@@ -31,11 +31,19 @@ FetchContent_Declare(
 	GIT_TAG a1ce3670aec736ecbf0936c43f2f0cc53aa61e5b
 )
 
+FetchContent_Declare(
+	SDL_IMAGE
+	GIT_REPOSITORY https://github.com/libsdl-org/SDL_image
+	GIT_TAG 11154afb7855293159588b245b446a4ef09e574f
+)
+
 FetchContent_MakeAvailable(SDL)
 
 FetchContent_MakeAvailable(JSON)
 
 FetchContent_MakeAvailable(SDL_TTF)
+
+FetchContent_MakeAvailable(SDL_IMAGE)
 
 # Включите подпроекты.
 add_subdirectory ("Going_UP")

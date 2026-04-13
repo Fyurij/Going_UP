@@ -16,6 +16,8 @@
 
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include <SDL3_image/SDL_image.h>
+
 #include <vector>
 #include <string>
 #include <memory>
@@ -24,11 +26,11 @@
 #include <thread>
 #include <algorithm>
 
-const int BLOCK_SIZE_IN_PIXELS = 15;
+const int BLOCK_SIZE_IN_PIXELS = 30;
 
-const int WINDOW_WIDTH = 70;
-const int GAME_WIDTH = 54;
-const int GAME_HEIGHT = 40;
+const int WINDOW_WIDTH = 50;
+const int GAME_WIDTH = 40;
+const int GAME_HEIGHT = 30;
 
 const int SDL_WINDOW_WIDTH = BLOCK_SIZE_IN_PIXELS * WINDOW_WIDTH;
 const int SDL_WINDOW_HEIGHT = BLOCK_SIZE_IN_PIXELS * GAME_HEIGHT;
@@ -42,6 +44,11 @@ bool movingScreen = false;
 TTF_Font* font;
 TTF_TextEngine* engine;
 TTF_Text* text;
+
+SDL_Texture* texturePlayer;
+SDL_Texture* textureBorder;
+SDL_Texture* texturePlatform;
+SDL_Texture* textureArtifact;
 
 void SetRect(SDL_FRect* r, int i, int j)
 {
@@ -360,33 +367,35 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 			{
 			case Pixel::Empty:
 				SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+				SDL_RenderFillRect(as->renderer, &r);
 				break;
 			case Pixel::Border:
-				SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+				SDL_RenderTexture(as->renderer, textureBorder, NULL, &r);
 				break;
 			case Pixel::Platform:
-				SDL_SetRenderDrawColor(as->renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
+				SDL_RenderTexture(as->renderer, texturePlatform, NULL, &r);
 				break;
 			case Pixel::Player:
-				SDL_SetRenderDrawColor(as->renderer, 160, 0, 255, SDL_ALPHA_OPAQUE);
+				SDL_RenderTexture(as->renderer, texturePlayer, NULL, &r);
 				break;
 			case Pixel::Artifact:
-				SDL_SetRenderDrawColor(as->renderer, 255, 165, 0, SDL_ALPHA_OPAQUE);
+				SDL_RenderTexture(as->renderer, textureArtifact, NULL, &r);
 				break;
 			case Pixel::Door:
 				if (!as->artifacts->IsAllArtifactsCollected())
 				{
 					SDL_SetRenderDrawColor(as->renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+					SDL_RenderFillRect(as->renderer, &r);
 				}
 				else
 				{
 					SDL_SetRenderDrawColor(as->renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+					SDL_RenderFillRect(as->renderer, &r);
 				}
 				break;
 			default:
 				break;
 			}
-			SDL_RenderFillRect(as->renderer, &r);
 		}
 	}
 	SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
@@ -485,6 +494,34 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 	TTF_SetTextColor(text, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+	texturePlayer = IMG_LoadTexture(as->renderer, "../config/Texture/player_stand.png");
+	if (!texturePlayer)
+	{
+		SDL_Log("Couldn't load player texture: %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	textureBorder = IMG_LoadTexture(as->renderer, "../config/Texture/stone.png");
+	if (!texturePlayer)
+	{
+		SDL_Log("Couldn't load border texture: %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	texturePlatform = IMG_LoadTexture(as->renderer, "../config/Texture/dirt.png");
+	if (!texturePlayer)
+	{
+		SDL_Log("Couldn't load platform texture: %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
+
+	textureArtifact = IMG_LoadTexture(as->renderer, "../config/Texture/artifact.png");
+	if (!texturePlayer)
+	{
+		SDL_Log("Couldn't load artifact texture: %s\n", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
 
 	as->config = std::make_shared<Config>(&as->level);
 
